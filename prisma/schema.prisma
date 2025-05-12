@@ -1,0 +1,61 @@
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  GURU
+  SUPERADMIN
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  schoolId  String?
+  school    School?  @relation(fields: [schoolId], references: [id])
+  sessions  Session[]
+  results   Result[]
+}
+
+model School {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  users     User[]
+  questions Question[]
+}
+
+model Question {
+  id        String   @id @default(uuid())
+  text      String
+  trait     String
+  createdAt DateTime @default(now())
+  schoolId  String
+  school    School   @relation(fields: [schoolId], references: [id])
+}
+
+model Session {
+  id         String   @id @default(uuid())
+  userId     String
+  answers    Json
+  resultType String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+}
+
+model Result {
+  id      String  @id @default(uuid())
+  userId  String
+  trait   String
+  score   Int
+  user    User    @relation(fields: [userId], references: [id])
+}
